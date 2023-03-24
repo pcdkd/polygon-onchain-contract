@@ -34,31 +34,12 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
   uint256 private constant OWNER_MINT_LIMIT = 10;
   uint256 private ownerMintedCount;
 
-  function mint() public payable {
+  function mint(uint256 numTokens) public payable {
     uint256 supply = totalSupply();
-    uint256 _tokenId = _tokenIdCounter.current();
-    _tokenIdCounter.increment();
-    require(supply + 1 <= 5000);
-
-    Word memory newWord = Word(
-        string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
-        "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
-        randomNum(21000000, block.timestamp, supply, 0, _tokenId + 100).toString(),
-        randomNum(90, 10011955, block.timestamp, 0, _tokenId + 100).toString(),
-        randomNum(90, 12081951, block.timestamp, 0, _tokenId + 100).toString(),
-        string(
-            abi.encodePacked(
-                coreValues[randomNum(coreValues.length, block.timestamp, supply, 0, _tokenId + 100)],
-                "-",
-                seedValues[randomNum(seedValues.length, block.timestamp, supply, 0, _tokenId + 100)],
-                "-",
-                baseValues[randomNum(baseValues.length, block.timestamp, supply, 0, _tokenId + 100)]
-            )
-        )
-    );
+    require(supply + numTokens <= 5000, "Exceeds maximum supply");
 
     if (msg.sender != owner()) {
-        uint256 requiredValue = 0.005 ether;
+        uint256 requiredValue = 0.005 ether * numTokens;
         require(msg.value >= requiredValue, "Ether value sent is not correct");
         if (msg.value > requiredValue) {
             uint256 excessValue = msg.value - requiredValue;
@@ -66,8 +47,34 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
         }
     }
 
-    words[supply + 1] = newWord;
-    _safeMint(msg.sender, supply + 1);
+    uint256 mintedCount = 0;
+    while (mintedCount < numTokens && ownerMintedCount < OWNER_MINT_LIMIT) {
+        _tokenIdCounter.increment();
+        uint256 _tokenId = _tokenIdCounter.current();
+
+        Word memory newWord = Word(
+            string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
+            "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
+            randomNum(21000000, block.timestamp, supply, 0, _tokenId + 100).toString(),
+            randomNum(90, 10011955, block.timestamp, 0, _tokenId + 100).toString(),
+            randomNum(90, 12081951, block.timestamp, 0, _tokenId + 100).toString(),
+            string(
+                abi.encodePacked(
+                    coreValues[randomNum(coreValues.length, block.timestamp, supply, 0, _tokenId + 100)],
+                    '-',
+                    seedValues[randomNum(seedValues.length, block.timestamp, supply, 0, _tokenId + 100)],
+                    '-',
+                    baseValues[randomNum(baseValues.length, block.timestamp, supply, 0, _tokenId + 100)]
+                )
+            )
+        );
+
+        words[supply + 1 + mintedCount] = newWord;
+        _safeMint(msg.sender, supply + 1 + mintedCount);
+        mintedCount++;
+    }
+
+    ownerMintedCount += mintedCount;
 }
 
   function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _minMod, uint256 _tokenId) public view returns(uint256){
