@@ -38,14 +38,14 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     uint256 supply = totalSupply();
     require(supply + numTokens <= 5000, "Exceeds maximum supply");
 
-    if (msg.sender != owner()) {
-        uint256 requiredValue = 0.005 ether * numTokens;
-        require(msg.value >= requiredValue, "Ether value sent is not correct");
-        if (msg.value > requiredValue) {
-            uint256 excessValue = msg.value - requiredValue;
-            payable(msg.sender).transfer(excessValue);
-        }
+    if (msg.sender != owner() && msg.value > 0) {
+    uint256 requiredValue = 0.005 ether * numTokens;
+    require(msg.value >= requiredValue, "Ether value sent is not correct");
+    if (msg.value > requiredValue) {
+        uint256 excessValue = msg.value - requiredValue;
+        payable(msg.sender).transfer(excessValue);
     }
+}
 
     uint256 mintedCount = 0;
     while (mintedCount < numTokens && ownerMintedCount < OWNER_MINT_LIMIT) {
