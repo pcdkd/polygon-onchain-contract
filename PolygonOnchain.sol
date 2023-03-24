@@ -41,19 +41,21 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     require(supply + 1 <= 5000);
 
     Word memory newWord = Word(
-      string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
-      "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
-      randomNum(21000000,block.timestamp,supply,0).toString(),
-      randomNum(90,10011955,block.timestamp,0).toString(),
-      randomNum(90,12081951,block.timestamp,0).toString(),
-      string(abi.encodePacked(
-        coreValues[randomNum(coreValues.length, block.timestamp, supply, 0)],
-        '-',
-        seedValues[randomNum(seedValues.length, block.timestamp, supply, 0)],
-        '-',
-        baseValues[randomNum(baseValues.length, block.timestamp, supply, 0)]
-    ))
-      );
+        string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
+        "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
+        randomNum(21000000, block.timestamp, supply, 0, _tokenId + 100).toString(),
+        randomNum(90, 10011955, block.timestamp, 0, _tokenId + 100).toString(),
+        randomNum(90, 12081951, block.timestamp, 0, _tokenId + 100).toString(),
+        string(
+            abi.encodePacked(
+                coreValues[randomNum(coreValues.length, block.timestamp, supply, 0, _tokenId + 100)],
+                "-",
+                seedValues[randomNum(seedValues.length, block.timestamp, supply, 0, _tokenId + 100)],
+                "-",
+                baseValues[randomNum(baseValues.length, block.timestamp, supply, 0, _tokenId + 100)]
+            )
+        )
+    );
 
     if (msg.sender != owner()) {
         uint256 requiredValue = 0.005 ether;
@@ -66,13 +68,13 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
 
     words[supply + 1] = newWord;
     _safeMint(msg.sender, supply + 1);
-  }
+}
 
-  function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _minMod) public view returns(uint256){
-      require(_mod >= _minMod, "Mod value too small");
-      uint256 num = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, _seed, _salt))) % _mod;
-      return num;
-  }
+  function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _minMod, uint256 _tokenId) public view returns(uint256){
+    require(_mod >= _minMod, "Mod value too small");
+    uint256 num = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, _seed, _salt, _tokenId))) % _mod;
+    return num;
+}
 
   function buildImage(uint256 _tokenId) public view returns(string memory) {
     string[10] memory polygonClasses;
