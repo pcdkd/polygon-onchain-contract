@@ -43,15 +43,15 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     Word memory newWord = Word(
       string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
       "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
-      randomNum(21000000,block.prevrandao,supply,0).toString(),
-      randomNum(90,10011955,block.prevrandao,0).toString(),
+      randomNum(21000000,block.timestamp,supply,0).toString(),
+      randomNum(90,10011955,block.timestamp,0).toString(),
       randomNum(90,12081951,block.timestamp,0).toString(),
       string(abi.encodePacked(
-        coreValues[randomNum(coreValues.length, block.prevrandao, supply, 0)],
+        coreValues[randomNum(coreValues.length, block.timestamp, supply, 0)],
         '-',
         seedValues[randomNum(seedValues.length, block.timestamp, supply, 0)],
         '-',
-        baseValues[randomNum(baseValues.length, block.prevrandao, supply, 0)]
+        baseValues[randomNum(baseValues.length, block.timestamp, supply, 0)]
     ))
       );
 
