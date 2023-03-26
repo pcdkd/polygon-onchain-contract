@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -39,8 +39,8 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     require(supply + numTokens <= 5000, "Exceeds maximum supply");
 
     if (msg.sender != owner() && msg.value > 0) {
-    uint256 requiredValue = 0.005 ether * numTokens;
-    require(msg.value >= requiredValue, "Ether value sent is not correct");
+    uint256 requiredValue = 0.004999999999999999 ether * numTokens;
+    require(msg.value > requiredValue, "Ether value sent is not correct");
     if (msg.value > requiredValue) {
         uint256 excessValue = msg.value - requiredValue;
         payable(msg.sender).transfer(excessValue);
@@ -55,16 +55,16 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
         Word memory newWord = Word(
             string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
             "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
-            randomNum(21000000, block.timestamp, supply, 0, _tokenId + 100).toString(),
-            randomNum(90, 10011955, block.timestamp, 0, _tokenId + 100).toString(),
-            randomNum(90, 12081951, block.timestamp, 0, _tokenId + 100).toString(),
+            randomNum(21000000, block.timestamp, supply, _tokenId + 100).toString(),
+            randomNum(90, 10011955, block.timestamp, _tokenId + 100).toString(),
+            randomNum(90, 12081951, block.timestamp, _tokenId + 100).toString(),
             string(
                 abi.encodePacked(
-                    coreValues[randomNum(coreValues.length, block.timestamp, supply, 0, _tokenId + 100)],
+                    coreValues[randomNum(coreValues.length, block.timestamp, supply, _tokenId + 100)],
                     '-',
-                    seedValues[randomNum(seedValues.length, block.timestamp, supply, 0, _tokenId + 100)],
+                    seedValues[randomNum(seedValues.length, block.timestamp, supply, _tokenId + 100)],
                     '-',
-                    baseValues[randomNum(baseValues.length, block.timestamp, supply, 0, _tokenId + 100)]
+                    baseValues[randomNum(baseValues.length, block.timestamp, supply, _tokenId + 100)]
                 )
             )
         );
@@ -77,8 +77,8 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     ownerMintedCount += mintedCount;
 }
 
-  function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _minMod, uint256 _tokenId) public view returns(uint256){
-    require(_mod >= _minMod, "Mod value too small");
+function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _tokenId) public view returns(uint256){
+    require(_mod > 0, "Mod value must be greater than 0");
     uint256 num = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, _seed, _salt, _tokenId))) % _mod;
     return num;
 }
