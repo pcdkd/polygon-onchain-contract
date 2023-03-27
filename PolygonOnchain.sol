@@ -35,7 +35,7 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
 
   function mint(uint256 numTokens) public payable {
     uint256 supply = totalSupply();
-    require(supply + numTokens <= 5000, "Exceeds maximum supply");
+    require(supply + numTokens < 5001, "Exceeds maximum supply");
 
     if (msg.sender != owner() && msg.value > 0) {
     uint256 requiredValue = 0.004999999999999999 ether * numTokens;
