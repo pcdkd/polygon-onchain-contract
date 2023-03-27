@@ -12,8 +12,7 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
 
   Counters.Counter private _tokenIdCounter;
 
-  string[] public coreValues = ["santi","gyara","chi","ekwe","ilo","jigida","kwenu","ndichie","nno","obodo dike","na-eso","ada","omume","ajebutter","kolo","oba","ore-ofe","soji","yab"];
-  string[] public seedValues = ["yakka","arvo","pluggers","esky","stoked","iffy","galah","crikey","cab sav","buckleys","accadacca","togs","cobber","slab","ute","devo","heaps","rellies","snag"];
+  string[] public coreValues = ["santi","gyara","chi","ekwe","ilo","jigida","kwenu","ndichie","nno","obodo dike","na-eso","ada","omume","ajebutter","kolo","oba","ore-ofe","soji","yab","yakka","arvo","pluggers","esky","stoked","iffy","galah","crikey","cab sav","buckleys","accadacca","togs","cobber","slab","ute","devo","heaps","rellies","snag"];
   string[] public baseValues = ["frontier","homestead","metropolis","byzantium","constantinople","serenity","samsara","nirvana","anatta","ochre","horizons","rupa","vedana","sanna","sankhara","vinnana"];
 
   struct Word {
@@ -49,8 +48,8 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
 
     uint256 mintedCount = 0;
     while (mintedCount < numTokens && ownerMintedCount < OWNER_MINT_LIMIT) {
-        _tokenIdCounter.increment();
         uint256 _tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
 
         Word memory newWord = Word(
             string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
@@ -61,8 +60,6 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
             string(
                 abi.encodePacked(
                     coreValues[randomNum(coreValues.length, block.timestamp, supply, _tokenId + 100)],
-                    '-',
-                    seedValues[randomNum(seedValues.length, block.timestamp, supply, _tokenId + 100)],
                     '-',
                     baseValues[randomNum(baseValues.length, block.timestamp, supply, _tokenId + 100)]
                 )
