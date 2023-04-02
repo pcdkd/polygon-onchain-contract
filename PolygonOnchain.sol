@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+/**
+ +-+ +-+ +-+ +-+ +-+ +-+ +-+ +-+
+ |P| |O| |L| |Y| |G| |O| |N| |S|
+ +-+ +-+ +-+ +-+ +-+ +-+ +-+ +-+
+ |O| |N| |C| |H| |A| |I| |N|    
+ +-+ +-+ +-+ +-+ +-+ +-+ +-+    
+ */
+
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
@@ -15,18 +23,17 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
   string[] public coreValues = ["santi","gyara","chi","ekwe","ilo","jigida","kwenu","ndichie","nno","obodo dike","na-eso","ada","omume","ajebutter","kolo","oba","ore-ofe","soji","yab","yakka","arvo","pluggers","esky","stoked","iffy","galah","crikey","cab sav","buckleys","accadacca","togs","cobber","slab","ute","devo","heaps","rellies","snag"];
   string[] public baseValues = ["frontier","homestead","metropolis","byzantium","constantinople","serenity","samsara","nirvana","anatta","ochre","horizons","rupa","vedana","sanna","sankhara","vinnana"];
 
-  struct Word {
+  struct Trait {
     string name;
     string description;
-    string PolyNumber;
-    string MumNumber;
-    string DadNumber;
+    string MumGenesis;
+    string DadGenesis;
     string value;
   }
 
-  mapping (uint256 => Word) public words;
+  mapping (uint256 => Trait) public traits;
 
-  constructor() ERC721("Polygon Onchain", "PLYGN") {
+  constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
       _tokenIdCounter.increment();
   }
 
@@ -38,23 +45,23 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     require(supply + numTokens < 5001, "Exceeds maximum supply");
 
     if (msg.sender != owner() && msg.value > 0) {
-    uint256 requiredValue = 0.004999999999999999 ether * numTokens;
-    require(msg.value > requiredValue, "Ether value sent is not correct");
-    if (msg.value > requiredValue) {
-        uint256 excessValue = msg.value - requiredValue;
-        payable(msg.sender).transfer(excessValue);
+        uint256 requiredValue = 4999999999999 wei * numTokens; // using uint256 value instead of decimal value
+        require(msg.value >= requiredValue, "Ether value sent is not correct");
+
+        if (msg.value > requiredValue) {
+            uint256 excessValue = msg.value - requiredValue;
+            payable(msg.sender).transfer(excessValue);
+        }
     }
-}
 
     uint256 mintedCount = 0;
     while (mintedCount < numTokens && ownerMintedCount < OWNER_MINT_LIMIT) {
         uint256 _tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
 
-        Word memory newWord = Word(
+        Trait memory newTrait = Trait(
             string(abi.encodePacked('Polygon Onchain ', uint256(_tokenId).toString())),
-            "Polygon Onchain is a generative polygon color collection, unique with each mint, completely onchain.",
-            randomNum(21000000, block.timestamp, supply, _tokenId + 100).toString(),
+            "Polygons is a generative, onchain art project on Ethereum.",
             randomNum(90, 10011955, block.timestamp, _tokenId + 100).toString(),
             randomNum(90, 12081951, block.timestamp, _tokenId + 100).toString(),
             string(
@@ -66,7 +73,7 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
             )
         );
 
-        words[supply + 1 + mintedCount] = newWord;
+        traits[supply + 1 + mintedCount] = newTrait;
         _safeMint(msg.sender, supply + 1 + mintedCount);
         mintedCount++;
     }
@@ -74,18 +81,10 @@ contract PolygonOnchain is ERC721Enumerable, Ownable {
     ownerMintedCount += mintedCount;
 }
 
-function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _tokenId) public view returns(uint256){
-    require(_mod > 0, "Mod value must be greater than 0");
-    uint256 num = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, _seed, _salt, _tokenId))) % _mod;
-    return num;
-}
-
   function buildImage(uint256 _tokenId) public view returns(string memory) {
     string[10] memory polygonClasses;
     for (uint i = 0; i < polygonClasses.length; i++) {
-        // Generate a random number between 0 and 99
-        uint256 randNum = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, i, _tokenId))) % 100;
-        // Map the random number to a polygon class letter
+        uint256 randNum = randomNum(100, block.timestamp, i, _tokenId);
         if (randNum < 20) {
             polygonClasses[i] = 'a';
         } else if (randNum < 40) {
@@ -99,10 +98,9 @@ function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _tokenId)
         }
     }
 
-    // Generate random opacities for each style class
     string[5] memory styleOpacities;
     for (uint i = 0; i < styleOpacities.length; i++) {
-        uint256 randOpacity = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, i + 100, _tokenId))) % 100;
+        uint256 randOpacity = randomNum(100, block.timestamp, i + 100, _tokenId);
         styleOpacities[i] = Strings.toString(randOpacity);
     }
 
@@ -122,7 +120,13 @@ function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _tokenId)
         '.e { fill: rgb(17, 17, 17); fill-opacity: ', styleOpacities[4], '%; }',
         '</style></svg>'
      )));
-   }
+    }
+
+  function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _tokenId) public view returns(uint256){
+    require(_mod > 0, "Mod value must be greater than 0");
+    uint256 num = uint256(keccak256(abi.encodePacked(block.timestamp, msg.sender, _seed, _salt, _tokenId))) % _mod;
+    return num;
+  }
 
   function tokenURI(uint256 _tokenId)
     public
@@ -136,22 +140,20 @@ function randomNum(uint256 _mod, uint256 _seed, uint256 _salt, uint256 _tokenId)
       "ERC721Metadata: URI query for nonexistent token"
     );
 
-    Word memory currentWord = words[_tokenId];
+    Trait memory currentTrait = traits[_tokenId];
 
     return string(abi.encodePacked(
       'data:application/json;base64,', Base64.encode(bytes(abi.encodePacked(
         '{"name":"',
-        currentWord.name,
+        currentTrait.name,
         '", "description":"',
-        currentWord.description,
-        '", "attributes": [{"trait_type": "PolygonNumber", "value": "',
-        currentWord.PolyNumber,
-        '"}, {"trait_type": "MumNumber", "value": "',
-        currentWord.MumNumber,
-        '"}, {"trait_type": "DadNumber", "value": "',
-        currentWord.DadNumber,
-        '"}, {"trait_type": "PolygonID", "value": "',
-        currentWord.value,
+        currentTrait.description,
+        '", "attributes": [{"trait_type": "MumGenesis", "value": "',
+        currentTrait.MumGenesis,
+        '"}, {"trait_type": "DadGenesis", "value": "',
+        currentTrait.DadGenesis,
+        '"}, {"trait_type": "PolygonsWord", "value": "',
+        currentTrait.value,
         '"}], "image": "',
         'data:image/svg+xml;base64,',
         buildImage(_tokenId),
